@@ -1281,6 +1281,84 @@ main {
     color: var(--text-primary);
 }
 
+/* === User Name Section === */
+.user-name-section {
+    margin-bottom: 2.5rem;
+}
+
+.name-input-container {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.name-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.name-icon {
+    font-size: 1.25rem;
+}
+
+.optional-tag {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.name-input {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    font-family: var(--font-body);
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.name-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.25);
+}
+
+.name-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* User Greeting in Header */
+.user-greeting {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.05) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: var(--radius-lg);
+    margin-right: 1rem;
+}
+
+.user-greeting.hidden {
+    display: none;
+}
+
+.greeting-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.greeting-text span {
+    color: var(--gold);
+    font-weight: 600;
+}
+
 /* Simulation Mode Selector */
 .mode-selector {
     margin-bottom: 2rem;
@@ -3046,6 +3124,36 @@ body:has(.my-team-tracker:not(.hidden)) .screen.active {
     
     .achievements-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    /* Name input responsive */
+    .user-name-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .name-input-container {
+        padding: 0 1rem;
+    }
+    
+    .name-label {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+    
+    .name-input {
+        padding: 0.85rem 1rem;
+        font-size: 1rem;
+    }
+    
+    /* Header greeting responsive */
+    .user-greeting {
+        margin-right: 0.5rem;
+        padding: 0.35rem 0.75rem;
+    }
+    
+    .greeting-text {
+        font-size: 0.8rem;
     }
 }
 

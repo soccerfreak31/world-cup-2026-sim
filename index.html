@@ -39,6 +39,9 @@
             </div>
         </div>
         <div class="header-actions">
+            <div id="userGreeting" class="user-greeting hidden">
+                <span class="greeting-text">Welcome, <span id="headerUserName"></span>!</span>
+            </div>
             <button id="resetBtn" class="btn btn-outline">
                 <span class="btn-icon">↺</span> Reset
             </button>
@@ -70,6 +73,18 @@
                         <div class="feature-icon">🏟️</div>
                         <h3>104 Matches</h3>
                         <p>Every game simulated</p>
+                    </div>
+                </div>
+
+                <!-- User Name Input -->
+                <div class="user-name-section">
+                    <div class="name-input-container">
+                        <label for="userNameInput" class="name-label">
+                            <span class="name-icon">👤</span>
+                            What's your name, fan?
+                            <span class="optional-tag">(optional)</span>
+                        </label>
+                        <input type="text" id="userNameInput" class="name-input" placeholder="Enter your name..." maxlength="50" />
                     </div>
                 </div>
 
@@ -113,8 +128,8 @@
         <section id="teamSelectScreen" class="screen">
             <div class="team-select-content">
                 <div class="team-select-header">
-                    <h2>🌟 CHOOSE YOUR TEAM</h2>
-                    <p>Select a nation to follow through the tournament. Your team will be highlighted throughout!</p>
+                    <h2>🌟 <span id="teamSelectTitle">CHOOSE YOUR TEAM</span></h2>
+                    <p id="teamSelectSubtitle">Select a nation to follow through the tournament. Your team will be highlighted throughout!</p>
                 </div>
                 
                 <div class="team-search">
@@ -246,7 +261,7 @@
             <div class="winner-content">
                 <div class="confetti-container" id="confetti"></div>
                 <div class="winner-trophy">🏆</div>
-                <h2>WORLD CHAMPIONS 2026</h2>
+                <h2 id="winnerTitle">WORLD CHAMPIONS 2026</h2>
                 <div id="winnerFlag" class="winner-flag"></div>
                 <h3 id="winnerName" class="winner-name"></h3>
                 <div class="winner-stats" id="winnerStats"></div>

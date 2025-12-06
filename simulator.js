@@ -181,6 +181,7 @@ class WorldCupSimulator {
         this.runnerUp = null;
         this.thirdPlace = null;
         this.favoriteTeam = null;
+        this.userName = null; // User's display name
         this.simulationMode = 'REALISTIC'; // 'REALISTIC', 'BALANCED', 'CHAOS'
         this.goldenBoot = {}; // Track scorers: { "Player (Country)": goals }
         this.goldenGlove = {}; // Track clean sheets: { "Goalkeeper (Country)": cleanSheets }
@@ -277,15 +278,116 @@ class WorldCupSimulator {
             window.amplitude.track(eventName, {
                 ...properties,
                 simulationMode: this.simulationMode,
-                favoriteTeam: this.favoriteTeam
+                favoriteTeam: this.favoriteTeam,
+                userName: this.userName || null
             });
         }
     }
     
+    // === USER NAME FEATURE ===
+    
+    // Hash a string using SHA-256
+    async hashString(str) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(str.toLowerCase().trim());
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
+    }
+    
+    // Set user name and configure Amplitude
+    async setUserName(name) {
+        if (!name || !name.trim()) {
+            this.userName = null;
+            return;
+        }
+        
+        this.userName = name.trim();
+        
+        // Hash the name for privacy-safe user identification
+        const hashedId = await this.hashString(this.userName);
+        
+        // Set Amplitude User ID and properties
+        if (window.amplitude) {
+            // Set the hashed value as User ID
+            window.amplitude.setUserId(hashedId);
+            
+            // Set the display name as a user property
+            const identify = new window.amplitude.Identify();
+            identify.set('full_name', this.userName);
+            identify.set('has_name', true);
+            window.amplitude.identify(identify);
+            
+            console.log(`User identified: ${this.userName} (ID: ${hashedId.substring(0, 8)}...)`);
+        }
+        
+        // Update UI with user greeting
+        this.updateUserGreeting();
+        
+        // Track name entry
+        this.trackEvent('User Name Entered', {
+            nameLength: this.userName.length
+        });
+    }
+    
+    // Update the header greeting with user's name
+    updateUserGreeting() {
+        const greetingContainer = document.getElementById('userGreeting');
+        const nameSpan = document.getElementById('headerUserName');
+        
+        if (this.userName && greetingContainer && nameSpan) {
+            nameSpan.textContent = this.userName;
+            greetingContainer.classList.remove('hidden');
+        } else if (greetingContainer) {
+            greetingContainer.classList.add('hidden');
+        }
+    }
+    
+    // Get personalized greeting prefix
+    getGreeting() {
+        if (!this.userName) return '';
+        const hour = new Date().getHours();
+        if (hour < 12) return `Good morning, ${this.userName}!`;
+        if (hour < 18) return `Good afternoon, ${this.userName}!`;
+        return `Good evening, ${this.userName}!`;
+    }
+    
     // === TEAM SELECTION FEATURE ===
     showTeamSelection() {
+        // Capture user name from input before proceeding
+        const nameInput = document.getElementById('userNameInput');
+        if (nameInput && nameInput.value.trim()) {
+            this.setUserName(nameInput.value);
+        }
+        
+        // Personalize team selection header if user entered name
+        this.personalizeTeamSelection();
+        
         this.showScreen('teamSelectScreen');
         this.renderTeamGrid();
+    }
+    
+    // Personalize the team selection screen
+    personalizeTeamSelection() {
+        const titleEl = document.getElementById('teamSelectTitle');
+        const subtitleEl = document.getElementById('teamSelectSubtitle');
+        
+        if (this.userName) {
+            if (titleEl) {
+                titleEl.textContent = `${this.userName.toUpperCase()}, CHOOSE YOUR TEAM`;
+            }
+            if (subtitleEl) {
+                subtitleEl.textContent = `Which nation will you support, ${this.userName}? Your team will be highlighted throughout!`;
+            }
+        } else {
+            if (titleEl) {
+                titleEl.textContent = 'CHOOSE YOUR TEAM';
+            }
+            if (subtitleEl) {
+                subtitleEl.textContent = 'Select a nation to follow through the tournament. Your team will be highlighted throughout!';
+            }
+        }
     }
     
     renderTeamGrid() {
@@ -353,7 +455,11 @@ class WorldCupSimulator {
         const team = TEAMS[this.favoriteTeam];
         
         document.getElementById('trackerFlag').textContent = team.flag;
-        document.getElementById('trackerName').textContent = this.favoriteTeam;
+        // Show user's name with team if available
+        const trackerName = this.userName 
+            ? `${this.userName}'s ${this.favoriteTeam}`
+            : this.favoriteTeam;
+        document.getElementById('trackerName').textContent = trackerName;
         document.getElementById('trackerStatus').textContent = 'In Tournament';
         document.getElementById('trackerStatus').className = 'stat-value status-active';
         document.getElementById('trackerWins').textContent = '0';
@@ -823,26 +929,27 @@ class WorldCupSimulator {
         if (isHome || isAway) {
             const favoriteScore = isHome ? homeScore : awayScore;
             const opponentScore = isHome ? awayScore : homeScore;
+            const namePrefix = this.userName ? `${this.userName}, ` : '';
             
             if (knockoutMatch) {
                 // Knockout match
                 if (knockoutMatch.winner === this.favoriteTeam) {
-                    resultText = '🎉 VICTORY! ADVANCING!';
+                    resultText = this.userName ? `🎉 ${this.userName.toUpperCase()}, WE'RE ADVANCING!` : '🎉 VICTORY! ADVANCING!';
                     resultClass = 'advance';
                 } else {
-                    resultText = '😢 ELIMINATED';
+                    resultText = this.userName ? `😢 Sorry ${this.userName}, we're out...` : '😢 ELIMINATED';
                     resultClass = 'eliminated';
                 }
             } else {
                 // Group match
                 if (favoriteScore > opponentScore) {
-                    resultText = '🎉 VICTORY!';
+                    resultText = this.userName ? `🎉 ${namePrefix}VICTORY!` : '🎉 VICTORY!';
                     resultClass = 'win';
                 } else if (favoriteScore < opponentScore) {
-                    resultText = '😞 DEFEAT';
+                    resultText = this.userName ? `😞 Tough loss, ${this.userName}...` : '😞 DEFEAT';
                     resultClass = 'loss';
                 } else {
-                    resultText = '🤝 DRAW';
+                    resultText = this.userName ? `🤝 A point earned, ${this.userName}!` : '🤝 DRAW';
                     resultClass = 'draw';
                 }
             }
@@ -1286,7 +1393,8 @@ class WorldCupSimulator {
         
         // Track tournament start
         this.trackEvent('Tournament Started', {
-            hasTeamSelected: !!this.favoriteTeam
+            hasTeamSelected: !!this.favoriteTeam,
+            hasUserName: !!this.userName
         });
         
         // Show commentary panel
@@ -1298,9 +1406,19 @@ class WorldCupSimulator {
         // Clear previous commentary
         if (window.commentary) {
             window.commentary.clearHistory();
-            window.commentary.addToHistory('🏆 FIFA World Cup 2026™ Tournament Begins!', 'champion');
+            
+            // Personalized welcome message
+            if (this.userName) {
+                window.commentary.addToHistory(`🎉 Welcome to the World Cup 2026™, ${this.userName}!`, 'champion');
+            } else {
+                window.commentary.addToHistory('🏆 FIFA World Cup 2026™ Tournament Begins!', 'champion');
+            }
+            
             if (this.favoriteTeam) {
-                window.commentary.addToHistory(`📢 Following: ${TEAMS[this.favoriteTeam]?.flag} ${this.favoriteTeam}`, 'info');
+                const followMsg = this.userName 
+                    ? `📢 ${this.userName} is supporting: ${TEAMS[this.favoriteTeam]?.flag} ${this.favoriteTeam}`
+                    : `📢 Following: ${TEAMS[this.favoriteTeam]?.flag} ${this.favoriteTeam}`;
+                window.commentary.addToHistory(followMsg, 'info');
             }
         }
         
@@ -1759,11 +1877,22 @@ class WorldCupSimulator {
     }
     
     async simulateEntireTournament() {
-        // Track instant simulation start
-        this.trackEvent('Instant Simulation Started', {});
+        // Capture user name from input before proceeding
+        const nameInput = document.getElementById('userNameInput');
+        if (nameInput && nameInput.value.trim()) {
+            await this.setUserName(nameInput.value);
+        }
         
-        // Show loading overlay
-        this.showLoadingOverlay('Simulating entire tournament...');
+        // Track instant simulation start
+        this.trackEvent('Instant Simulation Started', {
+            hasUserName: !!this.userName
+        });
+        
+        // Show loading overlay with personalized message
+        const loadingMsg = this.userName 
+            ? `Simulating the tournament for ${this.userName}...` 
+            : 'Simulating entire tournament...';
+        this.showLoadingOverlay(loadingMsg);
         
         // Skip team selection, go directly to simulation
         this.favoriteTeam = null;
@@ -2490,6 +2619,18 @@ class WorldCupSimulator {
         document.getElementById('winnerFlag').textContent = winnerData.flag;
         document.getElementById('winnerName').textContent = this.champion.toUpperCase();
         
+        // Personalize the winner title
+        const winnerTitle = document.getElementById('winnerTitle');
+        if (winnerTitle) {
+            if (this.userName && this.favoriteTeam === this.champion) {
+                winnerTitle.textContent = `🎉 ${this.userName.toUpperCase()}, YOUR TEAM ARE WORLD CHAMPIONS!`;
+            } else if (this.userName) {
+                winnerTitle.textContent = `WORLD CHAMPIONS 2026`;
+            } else {
+                winnerTitle.textContent = 'WORLD CHAMPIONS 2026';
+            }
+        }
+        
         // Track tournament completion
         this.trackEvent('Tournament Completed', {
             champion: this.champion,
@@ -2501,7 +2642,8 @@ class WorldCupSimulator {
                 (this.champion === this.favoriteTeam ? 'champion' : 
                  this.runnerUp === this.favoriteTeam ? 'runner_up' :
                  this.thirdPlace === this.favoriteTeam ? 'third_place' : 'eliminated') 
-                : 'no_team_selected'
+                : 'no_team_selected',
+            hasUserName: !!this.userName
         });
         
         // Update leaderboard
@@ -3012,7 +3154,8 @@ class WorldCupSimulator {
         this.thirdPlace = null;
         this.fourthPlace = null;
         this.favoriteTeam = null;
-        // Note: Keep simulationMode - user may want to keep their preference
+        // Note: Keep simulationMode and userName - user may want to keep their preference
+        // this.userName is preserved across resets
         this.goldenBoot = {};
         this.goldenGlove = {};
         this.playerPerformance = {};
@@ -3049,6 +3192,15 @@ class WorldCupSimulator {
         document.getElementById('simulateOtherGroupsBtn').classList.add('hidden');
         document.getElementById('simulateOtherGroupsBtn').disabled = false;
         document.getElementById('simulateOtherGroupsBtn').innerHTML = '<span class="btn-icon">⏩</span> Simulate Other Matches';
+        
+        // Restore name input with preserved user name
+        const nameInput = document.getElementById('userNameInput');
+        if (nameInput && this.userName) {
+            nameInput.value = this.userName;
+        }
+        
+        // Keep the header greeting visible if user has a name
+        this.updateUserGreeting();
         
         this.showScreen('welcomeScreen');
     }
