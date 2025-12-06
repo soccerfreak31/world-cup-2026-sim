@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIFA World Cup 2026™ Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Amplitude Browser SDK -->
+    <script src="https://cdn.amplitude.com/libs/analytics-browser-2.11.1-min.js.gz"></script>
+    <script>
+        window.amplitude.init('0bb8130fec4b242ecd1982bda8e1a082', {
+            defaultTracking: {
+                sessions: true,
+                pageViews: true,
+                formInteractions: false,
+                fileDownloads: false
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="background-effects">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+        <div class="stadium-pattern"></div>
+    </div>
+
+    <header>
+        <div class="logo-container">
+            <div class="trophy-icon">🏆</div>
+            <div class="title-group">
+                <h1>FIFA WORLD CUP 2026™</h1>
+                <p class="subtitle">USA • MEXICO • CANADA</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button id="resetBtn" class="btn btn-outline">
+                <span class="btn-icon">↺</span> Reset
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Welcome Screen -->
+        <section id="welcomeScreen" class="screen active">
+            <div class="welcome-content">
+                <div class="welcome-hero">
+                    <div class="hero-badge">SIMULATOR</div>
+                    <h2>Experience the Magic of<br><span class="gradient-text">World Cup 2026</span></h2>
+                    <p>48 nations. 3 host countries. 1 dream. Simulate the entire tournament and see who lifts the trophy!</p>
+                </div>
+                
+                <div class="feature-cards">
+                    <div class="feature-card">
+                        <div class="feature-icon">🌎</div>
+                        <h3>48 Teams</h3>
+                        <p>First expanded World Cup format</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚽</div>
+                        <h3>12 Groups</h3>
+                        <p>Intense group stage battles</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏟️</div>
+                        <h3>104 Matches</h3>
+                        <p>Every game simulated</p>
+                    </div>
+                </div>
+
+                <!-- Simulation Mode Toggle -->
+                <div class="mode-selector">
+                    <h4>Simulation Mode</h4>
+                    <div class="mode-options">
+                        <button class="mode-btn active" data-mode="REALISTIC">
+                            <span class="mode-icon">📊</span>
+                            <span class="mode-name">Realistic</span>
+                            <span class="mode-desc">FIFA rankings & stats</span>
+                        </button>
+                        <button class="mode-btn" data-mode="BALANCED">
+                            <span class="mode-icon">⚖️</span>
+                            <span class="mode-name">Balanced</span>
+                            <span class="mode-desc">Mix of skill & luck</span>
+                        </button>
+                        <button class="mode-btn" data-mode="CHAOS">
+                            <span class="mode-icon">🎲</span>
+                            <span class="mode-name">Chaos</span>
+                            <span class="mode-desc">Anything can happen!</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="welcome-buttons">
+                    <button id="startBtn" class="btn btn-primary btn-large">
+                        <span>Start Tournament</span>
+                        <span class="btn-arrow">→</span>
+                    </button>
+                    <button id="simulateAllBtn" class="btn btn-accent btn-large">
+                        <span class="btn-icon">⚡</span>
+                        <span>Instant Simulation</span>
+                    </button>
+                </div>
+                <p class="welcome-hint">Choose your team or simulate the entire tournament instantly!</p>
+            </div>
+        </section>
+
+        <!-- Team Selection Screen -->
+        <section id="teamSelectScreen" class="screen">
+            <div class="team-select-content">
+                <div class="team-select-header">
+                    <h2>🌟 CHOOSE YOUR TEAM</h2>
+                    <p>Select a nation to follow through the tournament. Your team will be highlighted throughout!</p>
+                </div>
+                
+                <div class="team-search">
+                    <input type="text" id="teamSearchInput" placeholder="Search teams..." />
+                </div>
+                
+                <div id="teamGrid" class="team-grid"></div>
+                
+                <div class="team-select-footer">
+                    <button id="skipTeamBtn" class="btn btn-outline">
+                        Skip - Neutral Mode
+                    </button>
+                    <button id="confirmTeamBtn" class="btn btn-primary btn-large" disabled>
+                        <span>Confirm Selection</span>
+                        <span class="btn-arrow">→</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Team Tracker (Shows when team is selected) -->
+        <div id="myTeamTracker" class="my-team-tracker hidden">
+            <div class="tracker-content">
+                <div class="tracker-team">
+                    <span id="trackerFlag" class="tracker-flag"></span>
+                    <span id="trackerName" class="tracker-name"></span>
+                </div>
+                <div class="tracker-stats">
+                    <div class="tracker-stat">
+                        <span class="stat-label">Status</span>
+                        <span id="trackerStatus" class="stat-value status-active">In Tournament</span>
+                    </div>
+                    <div class="tracker-stat">
+                        <span class="stat-label">Wins</span>
+                        <span id="trackerWins" class="stat-value">0</span>
+                    </div>
+                    <div class="tracker-stat">
+                        <span class="stat-label">Goals</span>
+                        <span id="trackerGoals" class="stat-value">0</span>
+                    </div>
+                </div>
+                <div id="trackerUnavailable" class="tracker-unavailable hidden"></div>
+                <button id="simulateNextMatchBtn" class="btn btn-accent btn-next-match">
+                    <span class="btn-icon">▶️</span> Next Match
+                </button>
+            </div>
+        </div>
+        
+        <!-- Match Result Modal -->
+        <div id="matchResultModal" class="match-modal hidden">
+            <div class="match-modal-backdrop"></div>
+            <div class="match-modal-content">
+                <div class="match-modal-header">
+                    <span id="matchModalStage" class="match-stage-badge">Group Stage</span>
+                </div>
+                <div class="match-modal-teams">
+                    <div class="modal-team home">
+                        <span id="modalHomeFlag" class="modal-flag"></span>
+                        <span id="modalHomeName" class="modal-team-name"></span>
+                    </div>
+                    <div class="modal-score">
+                        <span id="modalHomeScore" class="score-digit">0</span>
+                        <span class="score-separator">-</span>
+                        <span id="modalAwayScore" class="score-digit">0</span>
+                    </div>
+                    <div class="modal-team away">
+                        <span id="modalAwayFlag" class="modal-flag"></span>
+                        <span id="modalAwayName" class="modal-team-name"></span>
+                    </div>
+                </div>
+                <div id="matchModalResult" class="match-modal-result"></div>
+                <div id="matchModalScorers" class="match-modal-scorers"></div>
+                <button id="closeMatchModalBtn" class="btn btn-primary btn-large">
+                    <span>Continue</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Group Stage Screen -->
+        <section id="groupStageScreen" class="screen">
+            <div class="stage-header">
+                <h2>GROUP STAGE</h2>
+                <div class="stage-actions">
+                    <button id="simulateGroupsBtn" class="btn btn-primary">
+                        <span class="btn-icon">⚡</span> Simulate All Groups
+                    </button>
+                    <button id="simulateOtherGroupsBtn" class="btn btn-secondary hidden">
+                        <span class="btn-icon">⏩</span> Simulate Other Matches
+                    </button>
+                </div>
+            </div>
+            
+            <div id="groupsContainer" class="groups-grid"></div>
+            
+            <!-- Golden Boot Section -->
+            <div id="goldenBootSection" class="golden-boot-section hidden">
+                <div class="golden-boot-header">
+                    <span class="boot-icon">👟</span>
+                    <h3>Golden Boot Race</h3>
+                </div>
+                <div id="goldenBootList" class="golden-boot-list"></div>
+            </div>
+            
+            <div class="navigation-footer">
+                <button id="toKnockoutBtn" class="btn btn-primary btn-large" disabled>
+                    <span>Proceed to Knockout Stage</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Knockout Stage Screen -->
+        <section id="knockoutScreen" class="screen">
+            <div class="stage-header">
+                <h2>KNOCKOUT STAGE</h2>
+                <div class="stage-actions">
+                    <button id="simulateKnockoutBtn" class="btn btn-primary">
+                        <span class="btn-icon">⚡</span> Simulate Round
+                    </button>
+                </div>
+            </div>
+            
+            <div id="bracketContainer" class="bracket-container"></div>
+        </section>
+
+        <!-- Winner Screen -->
+        <section id="winnerScreen" class="screen">
+            <div class="winner-content">
+                <div class="confetti-container" id="confetti"></div>
+                <div class="winner-trophy">🏆</div>
+                <h2>WORLD CHAMPIONS 2026</h2>
+                <div id="winnerFlag" class="winner-flag"></div>
+                <h3 id="winnerName" class="winner-name"></h3>
+                <div class="winner-stats" id="winnerStats"></div>
+                
+                <!-- Tournament Awards Section -->
+                <div id="tournamentAwards" class="tournament-awards"></div>
+                
+                <!-- Share Results -->
+                <div class="share-section">
+                    <h4>📱 Share Your Results</h4>
+                    <div class="share-buttons">
+                        <button class="share-btn twitter" onclick="shareResults('twitter', window.simulator?.getShareData())">
+                            𝕏 Twitter
+                        </button>
+                        <button class="share-btn whatsapp" onclick="shareResults('whatsapp', window.simulator?.getShareData())">
+                            💬 WhatsApp
+                        </button>
+                        <button class="share-btn copy" onclick="shareResults('clipboard', window.simulator?.getShareData())">
+                            📋 Copy
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Newly Unlocked Achievements -->
+                <div id="newAchievements" class="new-achievements hidden"></div>
+                
+                <button id="playAgainBtn" class="btn btn-primary btn-large">
+                    <span>Play Again</span>
+                    <span class="btn-arrow">↺</span>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Floating Buttons -->
+    <div class="floating-buttons">
+        <button id="soundToggle" class="float-btn" onclick="toggleSound()" title="Toggle Sound">
+            🔊
+        </button>
+        <button class="float-btn" onclick="showAchievements()" title="Achievements">
+            🏆
+        </button>
+        <button class="float-btn" onclick="showLeaderboard()" title="Leaderboard">
+            📊
+        </button>
+    </div>
+    
+    <!-- Live Commentary Feed -->
+    <div id="commentaryPanel" class="commentary-panel hidden">
+        <div class="commentary-header">
+            <span>📺 Live Commentary</span>
+            <button onclick="document.getElementById('commentaryPanel').classList.toggle('minimized')">−</button>
+        </div>
+        <div id="commentaryFeed" class="commentary-feed"></div>
+    </div>
+    
+    <!-- Achievements Modal -->
+    <div id="achievementsModal" class="modal-overlay" onclick="if(event.target === this) this.classList.remove('active')">
+        <div class="modal-content achievements-modal">
+            <button class="modal-close" onclick="document.getElementById('achievementsModal').classList.remove('active')">×</button>
+            <div id="achievementsContent"></div>
+        </div>
+    </div>
+
+    <footer>
+        <p>World Cup 2026 Simulator • For entertainment purposes only</p>
+    </footer>
+
+    <script src="teams.js"></script>
+    <script src="players.js"></script>
+    <script src="sounds.js"></script>
+    <script src="commentary.js"></script>
+    <script src="achievements.js"></script>
+    <script src="features.js"></script>
+    <script src="simulator.js"></script>
+    <script>
+        // Sound toggle function
+        function toggleSound() {
+            const enabled = window.soundManager?.toggle();
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = enabled ? '🔊' : '🔇';
+            btn.title = enabled ? 'Sound On' : 'Sound Off';
+        }
+        
+        // Show achievements modal
+        function showAchievements() {
+            const modal = document.getElementById('achievementsModal');
+            const content = document.getElementById('achievementsContent');
+            const progress = window.achievementManager?.getProgress() || { unlocked: 0, total: 0, percentage: 0 };
+            const achievements = window.achievementManager?.getAllAchievements() || [];
+            
+            content.innerHTML = `
+                <h2>🏆 Achievements</h2>
+                <div class="achievement-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress.percentage}%"></div>
+                    </div>
+                    <span>${progress.unlocked}/${progress.total} (${progress.percentage}%)</span>
+                </div>
+                <div class="achievements-grid">
+                    ${achievements.map(a => `
+                        <div class="achievement-card ${a.unlocked ? 'unlocked' : 'locked'}" style="--rarity-color: ${RARITY_COLORS[a.rarity]}">
+                            <div class="achievement-icon">${a.icon}</div>
+                            <div class="achievement-name">${a.name}</div>
+                            <div class="achievement-desc">${a.description}</div>
+                            <div class="achievement-rarity">${a.rarity}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            modal.classList.add('active');
+        }
+        
+        // Show leaderboard modal
+        function showLeaderboard() {
+            const modal = document.getElementById('achievementsModal');
+            const content = document.getElementById('achievementsContent');
+            const topTeams = window.leaderboard?.getTopTeams(10) || [];
+            
+            content.innerHTML = `
+                <h2>🏆 All-Time Leaderboard</h2>
+                <p class="leaderboard-subtitle">Based on your simulation history</p>
+                <div class="leaderboard-list">
+                    ${topTeams.length === 0 ? '<p class="no-data">No simulations yet! Start playing to see stats.</p>' : ''}
+                    ${topTeams.map((team, i) => `
+                        <div class="leaderboard-item ${i < 3 ? 'top-three' : ''}">
+                            <span class="leaderboard-rank">${i + 1}</span>
+                            <span class="leaderboard-flag">${team.flag}</span>
+                            <span class="leaderboard-name">${team.team}</span>
+                            <span class="leaderboard-wins">🏆 ${team.wins}</span>
+                            <span class="leaderboard-finals">🥈 ${team.finals}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            modal.classList.add('active');
+        }
+    </script>
+</body>
+</html>
+
